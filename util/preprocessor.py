@@ -73,6 +73,7 @@ class PreprocessPostContent(object):
 
     def remove_code(self, txt):
         cleaned = re.sub(self.code_snippet, "", txt)
+        cleaned = re.sub(self.code_insider, "", cleaned)
         return cleaned
 
     def remove_equation(self, txt):
@@ -139,14 +140,8 @@ class PreprocessPostContent(object):
         return " ".join(cleaned)
 
     def remove_url(self, txt):
-        cleaned = []
-        for sent in TextBlob(txt).sentences:
-            s = sent.string
-            s_c = re.sub(self.web_url, "", s)
-            if sent.words != TextBlob(s_c).words:
-                continue
-            cleaned.append(s)
-        return " ".join(cleaned)
+        cleaned = re.sub(self.web_url, "", txt)
+        return cleaned
 
     def remove_punctuation(self, txt):
         cleaned = re.sub(self.punctuation, "", txt)
@@ -192,7 +187,12 @@ class PreprocessPostContent(object):
 
         return txt
 
+
     def getParagraphs(self, raw_txt):
+        """
+        :param raw_txt:
+        :return: a paragraph list
+        """
         raw_txt = self.filterNILStr(raw_txt)
         paragraphs_candiates = re.findall(self.paragraph, raw_txt)
         paragraphs_candiates = [p[3:-4] for p in paragraphs_candiates if len(p[3:-4]) > 0]
@@ -201,6 +201,15 @@ class PreprocessPostContent(object):
             paragraphs.append(p)
 
         return paragraphs
+
+    def getProcessedParagraphs(self, raw_txt):
+        paragraphs = self.getParagraphs(raw_txt)
+        processed_paragraphs = []
+        for p in paragraphs:
+            p1 = self.remove_code(p)
+            processed_paragraphs.append(self.__process(p1))
+
+        return processed_paragraphs
 
     # 过滤列表中单字符（标点）
     def filter_wordlist(self, wordlist):
@@ -237,6 +246,9 @@ class PreprocessPostContent(object):
         word_list = self.filter_wordlist(word_list)
         return word_list
 
+    def get_single_code(self, raw_txt):
+        ret = re.findall(re.compile(r"<code>(.*?)</code>"), raw_txt)
+        return ret
 
 if __name__ == '__main__':
     ans = '''
@@ -338,14 +350,21 @@ if __name__ == '__main__':
         <p>Here is a minimal character-level RNN , which consists of only a little more than a hundred lines of code , so you might be able to get your head around it or at least get it to run . Here is the excellent blog post by Karpathy to which the code sample belongs .</p>
     '''
 
-    text = "<p>Who was Jim Henson</p>. <p>Jim Henson was a puppeteer.But he always using pytorch and java's code: <code>System.out.println()</code></p>"
+    text1 = "<p>Who was Jim Henson</p><p>Jim Henson was a puppeteer.But he always using pytorch and java's code: <code>System.out.println()</code></p>"
 
-    text = "I am a bot ,and he's my friend, i. . # AI Beginners Book"
+    text2 = "I am a bot ,and he's my friend, i. . # AI Beginners Book"
 
-    ans = PreprocessPostContent().get_mul_para_wordlist_list(ans)
+    text3 = "This is my<code>code1 's content</code>,and this is my<code>code2</code>,<code>Syste.println()</code>"
+
+    # ans = PreprocessPostContent().get_mul_para_wordlist_list(ans)
     # ans = PreprocessPostContent().get_single_para_word_list(text)
-    # ans = PreprocessPostContent().getParagraphs(ans)
+
+    # ans = PreprocessPostContent().getProcessedParagraphs(text1)
 
     # ans = PreprocessPostContent().get_single_para_word_list(ans[0])
 
-    print(ans)
+    ans = PreprocessPostContent().get_single_code(text3)
+
+    for a in ans:
+        print(a.split())
+    # print(PreprocessPostContent().test())

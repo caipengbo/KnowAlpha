@@ -1,5 +1,6 @@
 # -*- UTF-8 -*-
 from util import tokenizer
+from util.preprocessor import PreprocessPostContent
 
 
 class Question:
@@ -13,6 +14,10 @@ class Question:
         self.created_date = created_date
         self.last_date = last_date
 
-
+    def parse_body(self):
+        processor = PreprocessPostContent()
+        body_para_list = processor.getProcessedParagraphs(self.body)
+        body = " ".join(body_para_list)
+        return body
 
 

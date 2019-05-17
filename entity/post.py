@@ -1,8 +1,5 @@
 # -*- UTF-8 -*-
-
-from entity.query import Query
-from entity.question import Question
-from util import tokenizer
+from util.preprocessor import PreprocessPostContent
 
 
 class Post:
@@ -11,32 +8,52 @@ class Post:
         self.question_obj = question_obj
         self.answer_obj_list = answer_obj_list
 
-    def calculate_title_relevance(self, query_obj):
-        question_title_word_list = tokenizer.tokenize(self.question_obj.title)
-        query_title_word_list = tokenizer.tokenize(query_obj.title)
-        # lower
-        question_title_word_list = [w.lower() for w in question_title_word_list]
-        query_title_word_list = [w.lower() for w in query_title_word_list]
+    def concat_answer_body(self):
+        answer_body_list = []
+        for answer_obj in self.answer_obj_list:
+            answer_body_list.append(answer_obj.parse_body())
 
-        question_num = len(question_title_word_list)
-        query_num = len(query_title_word_list)
+        return " ".join(answer_body_list)
 
-        if question_num < query_num:
-            overlap = [value for value in question_title_word_list if value in query_title_word_list]
-            ret = len(overlap) / question_num
-        else:
-            overlap = [value for value in query_title_word_list if value in question_title_word_list]
-            ret = len(overlap) / query_num
+    def get_question_body_code(self):
+        code_snippet_list = PreprocessPostContent().get_single_code(self.question_obj.body)
+        single_code_list = []
+        for code_snippet in code_snippet_list:
+            code_list = code_snippet.split()
+            if len(code_list) == 1:
+                single_code_list.extend(code_list)
 
-        return ret
+        return single_code_list
 
-    def calculate_tf_idf(self, query_obj):
-        return
+    def get_answer_body_code(self):
+        answer_body_list = []
+        for answer_obj in self.answer_obj_list:
+            answer_body_list.append(answer_obj.body)
 
-if __name__ == '__main__':
-    tag_list = ['<c++>', '<java>']
-    query = Query("Query Title1 and title2", "", tag_list, "2019-5-16")
-    question = Question("your title question title title", "", 2, 100, tag_list, "2019-5-16", "2019-5-26")
+        code_snippet_list = PreprocessPostContent().get_single_code(" ".join(answer_body_list))
+        single_code_list = []
+        for code_snippet in code_snippet_list:
+            code_list = code_snippet.split()
+            if len(code_list) == 1:
+                single_code_list.extend(code_list)
 
-    p = Post(question)
-    print(p.calculate_title_relevance(query))
+        return single_code_list
+
+
+    def set_title_relevance(self, title_relevance):
+        self.title_relevance = title_relevance
+
+    def set_tag_relevance(self, tag_relevance):
+        self.tag_relevance = tag_relevance
+
+    def set_question_body_tfidf(self, tfidf):
+        self.question_tfidf = tfidf
+
+    def set_answer_body_tfidf(self, tfidf):
+        self.answer_tfidf = tfidf
+
+    def set_score(self, score):
+        self.score = score
+
+    def set_code_relevance(self, code_relevance):
+        self.code_relevance = code_relevance
