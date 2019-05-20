@@ -1,12 +1,18 @@
 # -*- UTF-8 -*-
 from util.preprocessor import PreprocessPostContent
 
-
 class Post:
 
     def __init__(self, question_obj, answer_obj_list=None):
         self.question_obj = question_obj
         self.answer_obj_list = answer_obj_list
+        self.title_relevance = 0
+        self.tag_relevance = 0
+        self.question_tfidf = 0
+        self.answer_tfidf = 0
+        self.score = 0
+        self.code_relevance = 0
+        self.all_score = 0
 
     def concat_answer_body(self):
         answer_body_list = []
@@ -57,3 +63,10 @@ class Post:
 
     def set_code_relevance(self, code_relevance):
         self.code_relevance = code_relevance
+
+    def cal_all_score(self):
+        ls = [self.title_relevance, self.tag_relevance, self.question_tfidf, self.answer_tfidf, self.score, self.code_relevance, self.all_score]
+        self.all_score = sum(ls)
+
+    def __gt__(self, other):
+        return self.all_score > other.all_score
