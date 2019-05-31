@@ -1,6 +1,6 @@
 # -*- UTF-8 -*-
-# -*- UTF-8 -*-
-from tornado.escape import json_encode
+from typing import Optional, Awaitable
+
 from tornado.web import RequestHandler
 from tornado.web import Application
 from tornado.httpserver import HTTPServer
@@ -12,10 +12,10 @@ import json
 from entity.post import PostJSONEncoder
 from entity.query import Query
 
-define("port", default=8890, help="run on the given port", type=int)
-
 
 class SearchHandler(RequestHandler):
+    def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
+        pass
 
     def prepare(self):
         pass
@@ -28,8 +28,11 @@ class SearchHandler(RequestHandler):
         tag_list = re.findall('(\<[^ \>]+\>)', tags)
         size = self.get_query_argument('size', default=10)
 
-        query = Query(title=title, body=body,
-                      tag_list=tag_list, created_date=created_date)
+        if title == '' and body == '':
+            self.write("Please input <b>title</b> and <b>body</b> parameters!")
+            return
+
+        query = Query(title=title, body=body, tag_list=tag_list, created_date=created_date)
         query.search(size=size)
         query.arrange()
         post_results = query.get_results()
@@ -42,16 +45,3 @@ class SearchHandler(RequestHandler):
 
     def on_finish(self):
         pass
-
-
-def run_server():
-    app = Application([
-        (r"/search", SearchHandler)
-    ])
-    http_server = HTTPServer(app)
-    http_server.listen(options.port)
-    IOLoop.current().start()
-
-
-if __name__ == '__main__':
-    run_server()
