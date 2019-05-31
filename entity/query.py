@@ -18,6 +18,9 @@ class Query:
         self.created_date = created_date
         self.searched_post_list = []
 
+    def get_results(self):
+        return self.searched_post_list
+
     def search(self, size=200):
         search_result_list= search_es.search(self.title, size)
         # Post list
@@ -212,7 +215,7 @@ class Query:
         for post in self.searched_post_list:
             post.cal_all_score()
 
-    def range(self):
+    def arrange(self):
         self.calculate_title_relevance()
         # self.calculate_tf_idf(type="question_body")
         # self.calculate_tf_idf(type="answer_body")
@@ -230,6 +233,6 @@ if __name__ == '__main__':
 
     query = Query("How to use println in java", "Please show me how to use <code>println()<code> in java", tag_list1, "2019-5-16")
     query.search(size=2000)
-    query.range()
+    query.arrange()
     for pos in query.searched_post_list:
         print(pos.question_obj.title)

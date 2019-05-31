@@ -1,4 +1,5 @@
 # -*- UTF-8 -*-
+import json
 
 from util.preprocessor import PreprocessPostContent
 
@@ -12,6 +13,11 @@ class Question:
         self.score = score
         self.tag_list = tag_list
         self.created_date = created_date
+
+    def to_dict(self):
+        dic = {'title': self.title, 'body': self.body, 'comment_count': self.comment_count, 'score': self.score,
+               'tag_list': self.tag_list, 'created_date': self.created_date}
+        return dic
 
     def parse_body(self):
         processor = PreprocessPostContent()

@@ -1,5 +1,19 @@
 # -*- UTF-8 -*-
+import json
+
 from util.preprocessor import PreprocessPostContent
+
+# Json 序列化
+class PostJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Post):
+            ans_ls = []
+            for ans_obj in obj.answer_obj_list:
+                ans_ls.append(ans_obj.to_dict())
+            dic = {'question_obj': obj.question_obj.to_dict(), 'answer_obj_list': ans_ls}
+            return dic
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
 
 class Post:
 
@@ -45,7 +59,6 @@ class Post:
 
         return single_code_list
 
-
     def set_title_relevance(self, title_relevance):
         self.title_relevance = title_relevance
 
@@ -65,7 +78,8 @@ class Post:
         self.code_relevance = code_relevance
 
     def cal_all_score(self):
-        ls = [self.title_relevance, self.tag_relevance, self.question_tfidf, self.answer_tfidf, self.score, self.code_relevance, self.all_score]
+        ls = [self.title_relevance, self.tag_relevance, self.question_tfidf, self.answer_tfidf, self.score,
+              self.code_relevance, self.all_score]
         self.all_score = sum(ls)
 
     def __gt__(self, other):
