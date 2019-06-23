@@ -11,6 +11,7 @@ class Answer:
         self.score = score
         self.comment_count = comment_count
         self.created_date = created_date
+        self.parsed_body = ''
 
     def to_dict(self):
         dic = {'body': self.body, 'score': self.score, 'comment_count': self.comment_count,
@@ -20,8 +21,8 @@ class Answer:
     def parse_body(self):
         processor = PreprocessPostContent()
         body_para_list = processor.getProcessedParagraphs(self.body)
-        body = " ".join(body_para_list)
-        return body
+        self.parsed_body = " ".join(body_para_list)
+        return self.parsed_body
 
 
 if __name__ == '__main__':

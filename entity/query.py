@@ -4,14 +4,14 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from entity.answer import Answer
 from entity.post import Post
 from entity.question import Question
-from retriver import search_es
+from retriever import search_es
 from util import tokenizer
 from util.preprocessor import PreprocessPostContent
 import numpy as np
 
 
 class Query:
-    def __init__(self, title, body, tag_list, created_date):
+    def __init__(self, title, body='', tag_list='', created_date=''):
         self.title = title
         self.body = body
         self.tag_list = tag_list
@@ -26,12 +26,13 @@ class Query:
         # Post list
         post_obj_list = []
         for result in search_result_list:
-            result = result['_source']
+            result_id = result['_id']
+            result_source = result['_source']
             # Question
-            question = Question(result['question']['Title'], result['question']['Body'], result['question']['CommentCount'], result['question']['Score'], result['question']['Tags'], result['question']['CreationDate'])
+            question = Question(result_id, result_source['question']['Title'], result_source['question']['Body'], result_source['question']['CommentCount'], result_source['question']['Score'], result_source['question']['Tags'], result_source['question']['CreationDate'])
             # Answer list
             # body, created_date, score=0, comment_count=0
-            answers = result['answers']
+            answers = result_source['answers']
             answer_list = []
             for answer in answers:
                 # body, created_date, score=0, comment_count=0)
@@ -134,9 +135,12 @@ class Query:
                 self.searched_post_list[i - 1].set_answer_body_tfidf(sum)
 
     def __calculate_a_score(self, post_obj, alpha):
+        # 因为调用了ES TFIDF 值，所以要调用question和answer的 parse_body()
+        post_obj.question_obj.parse_body() # question的 parse_body()
         comment_count = post_obj.question_obj.comment_count
         vote_score = post_obj.question_obj.score
         for answer_obj in post_obj.answer_obj_list:
+            answer_obj.parse_body() # answer的 parse_body()
             comment_count += answer_obj.comment_count
             vote_score += answer_obj.score
 

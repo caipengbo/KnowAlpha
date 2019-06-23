@@ -34,6 +34,7 @@ def search2(query="", size=200):
             }
         }
     }
+    # Test
     doc2 = {
         "query": {
             "bool": {

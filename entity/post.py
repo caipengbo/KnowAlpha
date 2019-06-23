@@ -3,7 +3,8 @@ import json
 
 from util.preprocessor import PreprocessPostContent
 
-# Json 序列化
+
+# Json 序列化(For SearchHandler)
 class PostJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Post):
@@ -14,6 +15,23 @@ class PostJSONEncoder(json.JSONEncoder):
             return dic
         # Let the base class default method raise the TypeError
         return json.JSONEncoder.default(self, obj)
+
+
+# Json 序列化(For AnsAlphaHandler)
+class PostJSONEncoder2(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Post):
+            all_text = obj.question_obj.title + ' ' + obj.question_obj.parsed_body
+            for i, ans_obj in enumerate(obj.answer_obj_list):
+                if i == 3:
+                    break
+                all_text = all_text + ' ' + ans_obj.parsed_body
+
+            dic = {'id': obj.question_obj.es_id, 'text': all_text}
+            return dic
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
 
 class Post:
 

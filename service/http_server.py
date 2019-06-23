@@ -1,47 +1,33 @@
 # -*- UTF-8 -*-
-from typing import Optional, Awaitable
-
-from tornado.web import RequestHandler
-from tornado.web import Application
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.options import define, options
-import regex as re
-import json
+from tornado.web import Application
 
-from entity.post import PostJSONEncoder
-from entity.query import Query
+from service import config
+from service.http_handler import SearchHandler, KnowAlphaHandler
 
 
-class SearchHandler(RequestHandler):
-    def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
-        pass
+def search_server():
+    app = Application([
+        (r"/search", SearchHandler)
+    ])
+    http_server = HTTPServer(app)
+    http_server.listen(config.options['http_port'])
+    print('Development server is running at http://10.1.1.32:%s/search' % config.options['http_port'])
+    print('Notice: You can use parameters: title, body, created_date, tags, size')
+    IOLoop.current().start()
 
-    def prepare(self):
-        pass
 
-    def get(self):
-        title = self.get_query_argument('title', default='')
-        body = self.get_query_argument('body', default='')
-        created_date = self.get_query_argument('created_date', default='')
-        tags = self.get_query_argument('tags', default='')
-        tag_list = re.findall('(\<[^ \>]+\>)', tags)
-        size = self.get_query_argument('size', default=10)
+def know_alpha_server():
+    app = Application([
+        (r"/know_alpha", KnowAlphaHandler)
+    ])
+    http_server = HTTPServer(app)
+    http_server.listen(config.options['http_port'])
+    print('Development server is running at http://10.1.1.32:%s/know_alpha' % config.options['http_port'])
+    print('Notice: You can use parameters: title and size')
+    IOLoop.current().start()
 
-        if title == '' and body == '':
-            self.write("Please input <b>title</b> and <b>body</b> parameters!")
-            return
 
-        query = Query(title=title, body=body, tag_list=tag_list, created_date=created_date)
-        query.search(size=size)
-        query.arrange()
-        post_results = query.get_results()
-        results = json.dumps(post_results, cls=PostJSONEncoder)
-        self.set_header('Content-type', 'application/json')
-        self.write(results)
-
-    def post(self):
-        self.get()
-
-    def on_finish(self):
-        pass
+if __name__ == '__main__':
+    know_alpha_server()

@@ -1,5 +1,6 @@
 # -*- UTF-8 -*-
 
 options = {
-    "port": 8890
+    "tcp_server_port": 8866,
+    "http_port": 8890
 }
