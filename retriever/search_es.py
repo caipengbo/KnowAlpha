@@ -10,6 +10,7 @@ def search(query="", size=200):
         "query": {
             "multi_match": {
                 "query": query,
+                'type': 'most_fields',
                 "fields": ["question.Title", "question.Body"]
             }
         }
@@ -30,6 +31,7 @@ def search2(query="", size=200):
         "query": {
             "multi_match": {
                 "query": query,
+                "type": "most_fields",
                 "fields": ["question.Title", "question.Body"]
             }
         }
